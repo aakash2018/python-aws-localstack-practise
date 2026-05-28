@@ -1,0 +1,46 @@
+python -m venv venv
+source venv/bin/activate   # Linux/Mac
+venv\Scripts\activate      # Windows
+
+install liberaries
+pip install boto3 localstack awscli
+
+create requirement file
+pip freeze > requirements.txt
+
+
+bash command
+aws configure
+# Use dummy values:
+AWS Access Key ID: test
+AWS Secret Access Key: test
+Default region: us-east-1
+
+
+//create ec2 instance command
+aws --endpoint-url=http://localhost:4566 ec2 create-key-pair \
+  --key-name my-key \
+  --query 'KeyMaterial' \
+  --output text | tee key.pem
+
+
+aws --endpoint-url=http://localhost:4566 ec2 create-key-pair \
+  --key-name my-key \
+  --query 'KeyMaterial' \
+  --output text | tee key.pem
+
+
+show images ec2 instance
+aws --endpoint-url=http://localhost:4566 ec2 describe-images
+
+EC2 Run Karo
+aws --endpoint-url=http://localhost:4566 ec2 run-instances \
+  --image-id ami-03cf127a \
+  --instance-type t2.micro \
+  --key-name my-key
+
+
+
+
+
+  

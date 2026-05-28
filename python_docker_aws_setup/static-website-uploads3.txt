@@ -1,0 +1,20 @@
+Step 1 — Bucket Create
+aws --endpoint-url=http://localhost:4566 \
+s3 mb s3://my-static-site
+
+Step 2 — Pura Folder Upload
+aws --endpoint-url=http://localhost:4566 \
+s3 sync ./highfashion s3://my-static-site \
+--acl public-read
+
+Step 3 — Website Hosting Enable
+aws --endpoint-url=http://localhost:4566 \
+s3 website s3://my-static-site \
+--index-document index.html
+
+Step 4 — Verify Files
+aws --endpoint-url=http://localhost:4566 \
+s3 ls s3://my-static-site --recursive
+
+Step 5 — Browser me Open
+http://localhost:4566/my-static-site/index.html

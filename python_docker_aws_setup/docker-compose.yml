@@ -1,0 +1,23 @@
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack
+
+    ports:
+      - "4566:4566"
+      - "4571:4571"
+
+    environment:
+      - SERVICES=s3,dynamodb,lambda,sqs,sns,cloudwatch,cloudformation,iam,sts,cloudtrail,cloudwatchlogs,stepfunctions,apigateway,events
+      - DEFAULT_REGION=us-east-1
+      - DATA_DIR=/tmp/localstack/data
+      - LAMBDA_EXECUTOR=docker
+      - DOCKER_HOST=unix:///var/run/docker.sock
+
+    volumes:
+      - ./localstack:/tmp/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/localstack:/tmp/localstack
+      - /tmp/localstack/data:/tmp/localstack/data
+      - /tmp/localstack/infra:/tmp/localstack/infra
+      - /tmp/localstack/var:/tmp/localstack/var
