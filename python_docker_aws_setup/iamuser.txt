@@ -35,3 +35,11 @@ aws --endpoint-url=http://localhost:4566 iam list-roles
 
 10. EC2 Instance Launch (Real AWS में)
 aws ec2 run-instances --image-id ami-12345678 --count 1 --instance-type t2.micro --iam-instance-profile Name=EC2Role
+
+11. create access key
+aws --endpoint-url=http://localhost:4566 iam create-access-key --user-name developer
+
+
+Trust Policy = WHO can use the role?
+
+Permission Policy = WHAT can the role do after using it?
