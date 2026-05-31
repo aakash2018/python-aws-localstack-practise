@@ -1,0 +1,41 @@
+1. create image using docker
+docker build -t fastapi-app:v1 .
+
+//docker build -t fastapi:v1 -f .dockerfile .
+
+
+2. check image
+docker images
+
+3. ECR Repository Create
+aws --endpoint-url=http://localhost:4566 ecr create-repository --repository-name fastapi-app
+
+4. List repository
+aws --endpoint-url=http://localhost:4566 ecr describe-repositories
+
+5. Repository URI Nikalo
+aws --endpoint-url=http://localhost:4566 ecr describe-repositories
+
+6. Image Tag Karo //pta chal jaye ki yahi image hai jo push hogi production ko
+docker tag fastapi-app:v1 localhost:4566/fastapi-app:v1
+
+//docker tag fastapi:v1 localhost:4566/fastapi-setup:v1
+//docker tag fastapi:v1 000000000000.dkr.ecr.us-east-1.localhost.localstack.cloud:4566/fastapi:v1
+7. Push
+docker push localhost:4566/fastapi-app:v1
+//docker push localhost:4566/fastapi-setup:v1
+//docker push 000000000000.dkr.ecr.us-east-1.localhost.localstack.cloud:4566/fastapi:v1
+
+8. Local Image Delete
+docker rmi localhost:4566/fastapi-app:v1
+
+9. Pull
+docker pull localhost:4566/fastapi-app:v1
+docker pull 000000000000.dkr.ecr.us-east-1.localhost.localstack.cloud:4566/fastapi:v1
+10. run container
+docker run -d -p 8000:8000 localhost:4566/fastapi-app:v1
+
+docker run -d --name fastapi-container -p 8000:8000 000000000000.dkr.ecr.us-east-1.localhost.localstack.cloud:4566/fastapi:v1
+
+11. verify image ecr
+aws --endpoint-url=http://localhost:4566 ecr list-images --repository-name fastapi
