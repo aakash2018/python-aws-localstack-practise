@@ -1,0 +1,103 @@
+Step 1: Lambda Code Banao
+lambdafunction.py
+def lambda_handler(event, context):
+
+    return {
+        "statusCode": 200,
+        "body": "Hello Lambda"
+    }
+
+Step 2: ZIP File Banao
+Compress-Archive `
+-Path lambda_function.py `
+-DestinationPath lambda.zip
+
+check
+dir
+
+Step 3: Trust Policy Banao
+trust-policy.json
+
+{
+  "Version":"2012-10-17",
+  "Statement":[
+    {
+      "Effect":"Allow",
+      "Principal":{
+        "Service":"lambda.amazonaws.com"
+      },
+      "Action":"sts:AssumeRole"
+    }
+  ]
+}
+
+Step 4: IAM Role Create Karo
+aws --endpoint-url=http://localhost:4566 \
+iam create-role \
+--role-name lambda-role \
+--assume-role-policy-document file://trust-policy.json
+
+verify
+aws --endpoint-url=http://localhost:4566 \
+iam list-roles
+
+Step 5: Lambda Create Karo
+aws --endpoint-url=http://localhost:4566 \
+lambda create-function \
+--function-name hello-lambda \
+--runtime python3.12 \
+--handler lambdafunction.lambda_handler \
+--zip-file fileb://lambda.zip \
+--role arn:aws:iam::000000000000:role/lambda-role
+
+Step 6: Lambda Verify Karo
+aws --endpoint-url=http://localhost:4566 \
+lambda list-functions
+
+Step 7: Lambda Run Karo
+aws --endpoint-url=http://localhost:4566 \
+lambda invoke \
+--function-name hello-lambda \
+response.json
+
+Step 8: Output Dekho
+Get-Content response.json
+
+Step 9: Lambda Code Change Karo
+lambda_function.py
+def lambda_handler(event, context):
+
+    name = event.get("name", "Guest")
+
+    return {
+        "statusCode": 200,
+        "message": f"Hello {name}"
+    }
+
+Step 10: Zip Update Karo
+- Purani zip delete karo
+Remove-Item lambda.zip
+
+-Nayi zip banao:Compress-Archive `
+-Path lambda_function.py `
+-DestinationPath lambda.zip
+
+Step 11: Lambda Code Update Karo
+Lambda already create ho chuki hai, sirf code update karna hai.
+
+aws --endpoint-url=http://localhost:4566 lambda update-function-code --function-name hello-lambda --zip-file fileb://lambda.zip
+
+Step 12: Event File Banao
+event.json
+
+{
+  "name": "Aakash"
+}
+
+Step 13: Event Ke Sath Lambda Invoke Karo
+
+aws --endpoint-url=http://localhost:4566 lambda invoke --function-name hello-lambda --payload file://event.json response.json
+
+
+Step 14: Output Dekho
+Get-Content response.json
