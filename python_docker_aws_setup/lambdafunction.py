@@ -1,5 +1,3 @@
-import http
-
 def lambda_handler(event, context):
     name = event.get("name", "Guest")
     return {
