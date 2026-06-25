@@ -1,0 +1,49 @@
+#SNS Topic Create Karo
+aws --endpoint-url=http://localhost:4566 sns create-topic \
+--name my-topic
+
+#Topic List Dekho
+aws --endpoint-url=http://localhost:4566 sns list-topics
+
+#Message Publish Karo
+aws --endpoint-url=http://localhost:4566 sns publish \
+--topic-arn arn:aws:sns:us-east-1:000000000000:my-topic \
+--message "Hello SNS from LocalStack"
+
+#SQS Queue Banakar SNS Subscribe Karo
+
+#Queue Create
+aws --endpoint-url=http://localhost:4566 sqs create-queue \
+--queue-name my-queue
+
+#Queue URL Nikalo
+aws --endpoint-url=http://localhost:4566 sqs get-queue-url \
+--queue-name my-queue
+
+#Queue ARN Nikalo
+aws --endpoint-url=http://localhost:4566 sqs get-queue-attributes \
+--queue-url http://localhost:4566/000000000000/my-queue \
+--attribute-names QueueArn
+
+#SNS Topic Subscribe Karo
+aws --endpoint-url=http://localhost:4566 sns subscribe \
+--topic-arn arn:aws:sns:us-east-1:000000000000:my-topic \
+--protocol sqs \
+--notification-endpoint arn:aws:sqs:us-east-1:000000000000:my-queue
+
+#Message Publish Karo
+aws --endpoint-url=http://localhost:4566 sns publish \
+--topic-arn arn:aws:sns:us-east-1:000000000000:my-topic \
+--message "Order Created"
+
+#Queue se Message Receive Karo
+aws --endpoint-url=http://localhost:4566 sqs receive-message \
+--queue-url http://localhost:4566/000000000000/my-queue
+
+
+#see limited records in Queue
+aws --endpoint-url=http://localhost:4566 sqs receive-message \
+  --queue-url http://localhost:4566/000000000000/my-queue \
+  --max-number-of-messages 10 \
+  --visibility-timeout 0 \
+  --wait-time-seconds 0 
