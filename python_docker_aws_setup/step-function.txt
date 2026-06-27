@@ -1,0 +1,123 @@
+# Create IAM role (dummy for LocalStack)
+
+aws iam create-role \
+--role-name step-role \
+--assume-role-policy-document file://trust-policy.json \
+--endpoint-url=http://localhost:4566
+
+# trust-policy json
+{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Effect": "Allow",
+    "Principal": { "Service": "lambda.amazonaws.com" },
+    "Action": "sts:AssumeRole"
+  }]
+}
+
+# Create Lambda functions
+    # lambda1 functions
+    def lambda_handler(event, context):
+    return {"order_id": event["order_id"], "status": "validated"}
+    # lambda2 functions
+    def lambda_handler(event, context):
+    return {"order_id": event["order_id"], "payment": "success"}
+    # lambda3 functions
+    def lambda_handler(event, context):
+    return {"message": "done", "order_id": event["order_id"]}
+
+# Zip lambdas
+Compress-Archive -Path .\lambdastep1.py -DestinationPath .\lambdastep1.zip  
+Compress-Archive -Path .\lambdastep2.py -DestinationPath .\lambdastep2.zip  
+Compress-Archive -Path .\lambdastep3.py -DestinationPath .\lambdastep3.zip   
+
+# Create Lambda functions in LocalStack
+aws lambda create-function \
+--function-name lambdastep1 \
+--runtime python3.9 \
+--handler lambda1.lambda_handler \
+--zip-file fileb://lambdastep1.zip \
+--role arn:aws:iam::000000000000:role/step-role \
+--endpoint-url=http://localhost:4566
+
+aws lambda create-function \
+--function-name lambdastep2 \
+--runtime python3.9 \
+--handler lambda1.lambda_handler \
+--zip-file fileb://lambdastep2.zip \
+--role arn:aws:iam::000000000000:role/step-role \
+--endpoint-url=http://localhost:4566
+
+aws lambda create-function \
+--function-name lambdastep3 \
+--runtime python3.9 \
+--handler lambda1.lambda_handler \
+--zip-file fileb://lambdastep3.zip \
+--role arn:aws:iam::000000000000:role/step-role \
+--endpoint-url=http://localhost:4566
+
+# Step Function JSON
+{
+  "StartAt": "Lambda1",
+  "States": {
+    "Lambda1": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:000000000000:function:lambdastep1",
+      "Next": "Lambda2"
+    },
+    "Lambda2": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:000000000000:function:lambdastep2",
+      "Next": "Lambda3"
+    },
+    "Lambda3": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:000000000000:function:lambdastep3",
+      "End": true
+    }
+  }
+}
+
+# Create Step Function
+aws stepfunctions create-state-machine \
+--name my-flow \
+--definition file://state-machine.json \
+--role-arn arn:aws:iam::000000000000:role/step-role \
+--endpoint-url=http://localhost:4566
+
+# Run execution
+aws stepfunctions start-execution \
+--state-machine-arn <STATE_MACHINE_ARN> \
+--name test-run \
+--input '{"order_id":101}' \
+--endpoint-url=http://localhost:4566
+
+aws stepfunctions start-execution `
+  --state-machine-arn arn:aws:states:us-east-1:000000000000:stateMachine:my-flow `
+  --name test-run `   
+  --input '{\"order_id\":101}' `
+  --endpoint-url http://localhost:4566
+
+# check execution
+aws stepfunctions describe-execution \
+--execution-arn <EXECUTION_ARN> \
+--endpoint-url=http://localhost:4566
+
+aws stepfunctions describe-execution \
+--execution-arn arn:aws:states:us-east-1:000000000000:execution:my-flow:test-run2 \
+--endpoint-url=http://localhost:4566
+
+# update state machine
+aws stepfunctions update-state-machine \
+  --state-machine-arn arn:aws:states:us-east-1:123456789012:stateMachine:orderFlow \
+  --definition file://state-machine.json
+
+# then run execution
+aws stepfunctions start-execution `
+  --state-machine-arn arn:aws:states:us-east-1:000000000000:stateMachine:my-flow `
+  --name test-run-3 `
+  --input '{\"order_id\":101}' `
+  --endpoint-url http://localhost:4566
+
+
+
